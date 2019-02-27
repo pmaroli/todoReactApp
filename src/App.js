@@ -4,79 +4,60 @@ import Header from './Header'
 import AddForm from './AddForm'
 import Footer from './Footer'
 import List from './List'
+import BackEnd from './todoBackEnd'
+import low from 'lowdb'
+import localStorage from 'lowdb/adapters/LocalStorage'
 
+
+var adapter = new localStorage('todoList');
+var db = low(adapter);
+db.defaults({ todos: [] }).write();
+var dbInstance = new BackEnd.Todo(db);
 
 class App extends Component {
   state = {
     todos: [] //Initialize the state
   }
 
-  componentDidMount() { //Initialize the localStorage component
-    if (localStorage.getItem('todoList')) {
-      this.updateState();
-    } else {
-      localStorage.setItem('todoList', JSON.stringify([])); //Initialize localStorage with an empty array
+  constructor(props) {
+    super();
+  
+    this.state = {
+      todos: dbInstance.getTodo()
     }
+  }
+
+  updateState = () => {
+    this.setState({
+      todos: dbInstance.getTodo()
+    })
   }
   
-  addTodo = (todo) => {
-    if( todo.taskName === '') {
+  addTodo = (taskName) => {
+    if( taskName === '') {
       return //Don't add empty todo items!
-    }
+    }  
     
-    todo.id = Math.random(); //Set a random number as the ID (a unique indentifier)
-    todo.complete = false;
-    
-    //Add the todo object to an array of todo objects in the localStorage
-    //If the 'todoList' item in localStorage doesn't exist, create it
-    if (localStorage.getItem('todoList')) {
-      var todoList = JSON.parse(localStorage.getItem('todoList'));
-      todoList.push(todo);
-      localStorage.setItem('todoList', JSON.stringify(todoList));
-      this.updateState();
-    } else {
-      todoList = [];
-      todoList.push(todo);
-      localStorage.setItem('todoList', JSON.stringify(todoList));
-    }
+    dbInstance.newTodo(taskName);
+    this.updateState();
   }
 
-  toggleComplete = (id) => {
-    var todoList = JSON.parse(localStorage.getItem('todoList'));
-
-    for (var i = 0; i < todoList.length; i++) {
-      if ( todoList[i].id === id ) {
-        todoList[i].complete = (!todoList[i].complete); /* Toggles the complete status of the task */
-      }
-    }
-
-    //Update the local storage appropriately
-    localStorage.setItem('todoList', JSON.stringify(todoList));
+  toggleComplete = (taskID, complete) => {
+    dbInstance.toggleComplete(taskID, complete);
     this.updateState();
   }
   
-  updateState = () => {
-    this.setState({
-      todos: JSON.parse(localStorage.getItem('todoList'))
-    });
-  }
-  
-  removeTodo = (id) => {
-    var todoList = JSON.parse(localStorage.getItem('todoList'));
-    const newTodos = todoList.filter(todo => {
-      return todo.id !== id
-    })
-    localStorage.setItem('todoList', JSON.stringify(newTodos));
+  removeTodo = (taskID) => {
+    dbInstance.removeTodo(taskID);
     this.updateState();
   }
   
   clearAll = () => {
-    localStorage.setItem('todoList', JSON.stringify([]));
+    dbInstance.removeAll();
     this.updateState();
   }
   
-  
-  
+
   render() {
     return (
       <div className="App">

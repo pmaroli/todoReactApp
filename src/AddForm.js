@@ -13,7 +13,7 @@ class AddForm extends Component {
 
     handleSubmit = (e) => {
         e.preventDefault();
-        this.props.addTodo(this.state);
+        this.props.addTodo(this.state.taskName);
         this.setState({
             taskName: ''
         })

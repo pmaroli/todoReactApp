@@ -13,7 +13,7 @@ const List = ({todos, toggleComplete, removeTodo}) => {
 
             return (
                 <li>
-                    <a href='#' onClick={() => toggleComplete(todo.id)} id={todo.id}>{todo.taskName}{status}</a>
+                    <a href='#' onClick={() => toggleComplete(todo.id, todo.complete)} id={todo.id}>{todo.taskName}{status}</a>
                     <span class="remove" onClick={() => {removeTodo(todo.id)}} id={todo.id}>X</span>
                 </li>
             )
